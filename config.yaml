@@ -1,0 +1,9 @@
+# 配置管理员QQ  例如 manager_id: 1234567890
+manager_id: 
+
+# 代理地址https，修改为你的代理地址
+proxy: "127.0.0.1:10809"
+
+# Replace YOUR_PHPSESSID with your actual PHPSESSID from pixiv
+# PHPSESSID获取方法见 https://zhuzemin.github.io/pixiv_sort_by_popularity/
+phpsessid: ""
