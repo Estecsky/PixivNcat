@@ -1,3 +1,6 @@
+import sys
+import os
+sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(__file__))))
 import pixivtools.pixiv_utils.log as pixiv_utils_log
 import pixivtools.pixiv_api as pixiv_api
 from pixivtools.pixiv_cfg import PixivConfig

@@ -1,3 +1,3 @@
-from .main import JMBot
+from .main import PixivNcat
 
 __all__ = ["PixivNcat"]

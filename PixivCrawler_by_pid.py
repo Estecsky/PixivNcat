@@ -1,15 +1,17 @@
+import sys
+import os
+sys.path.append((os.path.dirname(__file__)))
+from pixivtools import pixiv_api
 import pixivtools
 import asyncio
 import yaml
-import os
-
 global_pid = 129162873
 # # 定义两个不同的 PID
 # # global_pid1 = "129153029"
 # global_pid1 = "1314520"
 # global_pid2 = "128252798"
 
-global_options = pixivtools.pixiv_api.ArtworkOptions(
+global_options = pixiv_api.ArtworkOptions(
         update=False,
         only_r18=False,
         only_non_r18=True,
@@ -20,10 +22,10 @@ global_options = pixivtools.pixiv_api.ArtworkOptions(
 global_set_img_pid_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(__file__)))),"Pixiv_out","images_pid")
 global_set_log_file = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(__file__)))),"Pixiv_out","out.log")
 global_set_sql_url = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(__file__)))),"pixiv.db")
-
+global_config_yaml = os.path.join(os.path.dirname(__file__),"config.yaml")
 
 def get_config():
-    with open("config.yaml", "r", encoding="utf-8") as f:
+    with open(global_config_yaml, "r", encoding="utf-8") as f:
         config_data = yaml.safe_load(f)
     # Create config using constructor
     cfg_maker = pixivtools.pixiv_config_maker()

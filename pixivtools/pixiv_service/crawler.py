@@ -1,3 +1,6 @@
+import sys
+import os
+sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(__file__))))
 import pixivtools.pixiv_api as pixiv_api
 from . import model
 from .context import PixivContext
