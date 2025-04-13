@@ -17,3 +17,4 @@ out/
 11.py
 __pycache__/
 pixiv.db
+config.yaml
