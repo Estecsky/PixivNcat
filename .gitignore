@@ -18,3 +18,4 @@ out/
 __pycache__/
 pixiv.db
 config.yaml
+Ori_img_id.txt
