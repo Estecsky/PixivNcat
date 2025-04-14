@@ -18,3 +18,5 @@ out/
 __pycache__/
 pixiv.db
 Ori_img_id.txt
+logs/
+selected_img_id.txt
