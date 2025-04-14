@@ -38,7 +38,6 @@ images_pid_path = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(o
 
 
 global_config_yaml = os.path.join(os.path.dirname(__file__),"config.yaml")
-global_selected_img_txt = os.path.join(os.path.dirname(__file__),"selected_img_id.txt")
 bot = CompatibleEnrollment  # 兼容回调函数注册器
 super_user = ""
 
@@ -150,11 +149,6 @@ class PixivNcat(BasePlugin):
             config_data = yaml.safe_load(f)
             global super_user
             super_user = config_data["manager_id"]
-
-        if not os.path.exists(global_selected_img_txt):
-            with open(global_selected_img_txt,"w") as f:
-                f.write("")
-
 
 
         # 插件加载时执行的操作, 可缺省
