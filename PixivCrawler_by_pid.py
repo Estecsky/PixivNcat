@@ -11,13 +11,13 @@ global_pid = 129162873
 # global_pid1 = "1314520"
 # global_pid2 = "128252798"
 
-global_options = pixiv_api.ArtworkOptions(
-        update=False,
-        only_r18=False,
-        only_non_r18=True,
-        skip_manga=True,
-        artwork_types=0,
-        ignore_error=True
+global_options = pixiv_api.ArtworkOptions(   # 全局作品过滤设置，参考： https://github.com/aliubo/pixivtools
+    update=False,       # update: bool, 是否更新已存在的artwork
+    only_r18=False,     # only_r18: bool, 是否只爬取R18
+    only_non_r18=True,  # only_non_r18: bool, 是否只爬取非R18
+    skip_manga=True,    # skip_manga: bool, 是否跳过漫画
+    artwork_types=0,    # artwork_types: list[ArtworkType], 只爬取指定类型的artwork     ILLUST = 0  # 插画  MANGA = 1  # 漫画 UGORIA = 2  # 动图
+    ignore_error=True    # ignore_error: bool, 是否忽略爬取过程中的某个artwork出错，如果为False则会在出错时直接raise
 )
 global_set_img_pid_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(__file__)))),"Pixiv_out","images_pid")
 global_set_log_file = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(__file__)))),"Pixiv_out","out.log")

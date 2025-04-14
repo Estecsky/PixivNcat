@@ -19,3 +19,5 @@ __pycache__/
 pixiv.db
 config.yaml
 Ori_img_id.txt
+logs/
+selected_img_id.txt
