@@ -25,8 +25,8 @@ Pixiv_help_info =[
 
 # 随机涩图需要的图库，默认和排行榜爬虫文件中全局类型一致，或者根据自己的文件路径修改
 # 例如 img_RankType = 'weekly' 如果修改了images_path可忽略此项
-img_RankType = global_RankType
-# img_RankType = "custom"
+# img_RankType = global_RankType
+img_RankType = "custom"
 
 # 最好使用绝对路径，随机涩图需要的图库路径
 # images_path = ""
@@ -42,7 +42,8 @@ bot = CompatibleEnrollment  # 兼容回调函数注册器
 super_user = ""
 
 PixivNcat_on = True
-
+prev_msg_time = 0
+cold_time = 20
 class PixivNcat(BasePlugin):
     name = "PixivNcat" # 插件名称
     version = "0.7.0"  # 插件版本
@@ -54,10 +55,21 @@ class PixivNcat(BasePlugin):
         '''
         global PixivNcat_on
         global Pixiv_help_info
+        global cold_time
     # 定义的回调函数
         if msg.raw_message.lower() == "测试PixivBot".lower():
             if msg.user_id == super_user:
                 await self.api.post_group_msg(msg.group_id, text="插件PixivBot测试成功")
+        if msg.raw_message.lower().startswith("冷却时间"):
+            if msg.user_id == super_user:
+                if  msg.raw_message[4:].isdigit():
+                    # with open(global_config_yaml, 'r',encoding="utf-8") as file:
+                    #     data = yaml.safe_load(file)
+                    # with open(global_config_yaml, 'w',encoding="utf-8") as file:
+                    #     data["cold_time"] = int(msg.raw_message[4:])
+                    #     yaml.dump(data, file)
+                    cold_time = int(msg.raw_message[4:])
+                    await self.api.post_group_msg(msg.group_id, text=f"冷却时间为{cold_time}")
         if msg.raw_message.lower() == "关闭PixivBot".lower():
             if msg.user_id == super_user:
                 PixivNcat_on = False
@@ -75,19 +87,37 @@ class PixivNcat(BasePlugin):
         群聊事件处理-PixivBot运行
         '''
         global PixivNcat_on
+        global prev_msg_time
+        global cold_time
+        global super_user
         if PixivNcat_on == True:
             if msg.raw_message.lower() == "/pixiv 随机涩图" or msg.raw_message.lower() == "随机涩图":
-                selceted_img_name = get_Ramdom_imgId(images_path,msg.group_id)
-                selceted_img_name = selceted_img_name.replace("\n",'')
-                selceted_file_path = os.path.join(images_path, selceted_img_name)
-                if not os.path.exists(selceted_file_path):
-                    _log.info(f"图片路径不存在 {selceted_file_path}")
+                if msg.time - prev_msg_time < cold_time and msg.user_id != super_user:
+                    await self.api.post_group_msg(msg.group_id, text=f"{cold_time}秒冷却中喵",reply=msg.message_id)
                     return
-                # Send the file as a message
-                # msg_chain = MessageChain([
-                #     Image(selceted_file_path)
-                # ])
-                await self.api.post_group_file(msg.group_id,image=selceted_file_path)
+                else:
+                # if msg.user_id != super_user: 
+                #     await self.api.post_group_msg(msg.group_id, text="调试中，暂时禁用",reply=msg.message_id)
+                # print(msg.time)
+                    selceted_img_name = get_Ramdom_imgId(images_path,msg.group_id)
+                    selceted_img_name = selceted_img_name.replace("\n",'')
+                    selceted_file_path = os.path.join(images_path, selceted_img_name)
+                    if not os.path.exists(selceted_file_path):
+                        _log.info(f"图片路径不存在 {selceted_file_path}")
+                        return
+                    # Send the file as a message
+                    msg_chain = MessageChain([
+                        Image(selceted_file_path)
+                    ])
+                    prev_msg_time = msg.time
+                    # await self.api.post_group_file(msg.group_id,image=selceted_file_path)
+                    send_status = await self.api.post_group_msg(msg.group_id,rtf=msg_chain)
+                    # print(send_status)
+                    if send_status['status'] ==  'failed':
+                        prev_msg_time = 0
+                        await self.api.post_group_msg(msg.group_id, text="图片发送失败喵~，再次抽取喵~",reply=msg.message_id)
+
+                return
                 
             if msg.raw_message.lower().startswith("/pixiv pid "):
                 artwork_pid = msg.message[0]["data"]["text"].strip()[11:] #/pixiv pid 129105117
@@ -122,11 +152,11 @@ class PixivNcat(BasePlugin):
                                 _log.info(f"图片路径不存在{img_file_path}")
                                 return
                             # Send the file as a message
-                            # msg_chain = MessageChain([
-                            #     Image(img_file_path)
-                            # ])
-
-                            await self.api.post_group_file(msg.group_id,image=img_file_path)
+                            msg_chain = MessageChain([
+                                Image(img_file_path)
+                            ])
+                            await self.api.post_group_msg(msg.group_id,rtf=msg_chain)
+                            # await self.api.post_group_file(msg.group_id,image=img_file_path)
                             await self.api.post_group_msg(msg.group_id,text=f"喵~Pid:{artwork_pid}")
 
     
@@ -149,7 +179,6 @@ class PixivNcat(BasePlugin):
             config_data = yaml.safe_load(f)
             global super_user
             super_user = config_data["manager_id"]
-
 
         # 插件加载时执行的操作, 可缺省
         print(f"{self.name} 插件已加载")
