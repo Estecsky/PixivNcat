@@ -3,3 +3,4 @@ Pillow
 PyYAML
 Requests
 SQLAlchemy
+saucenao_api

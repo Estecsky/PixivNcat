@@ -7,3 +7,5 @@ proxy: "127.0.0.1:10809"
 # Replace YOUR_PHPSESSID with your actual PHPSESSID from pixiv
 # PHPSESSID获取方法见 https://zhuzemin.github.io/pixiv_sort_by_popularity/
 phpsessid: ""
+#你的saucenao api key
+saucenao_api_key: ""

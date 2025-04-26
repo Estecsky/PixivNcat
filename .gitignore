@@ -17,7 +17,7 @@ out/
 11.py
 __pycache__/
 pixiv.db
-config.yaml
+saucenao_search_log/
 Ori_img_id.txt
 logs/
 selected_img_id.txt

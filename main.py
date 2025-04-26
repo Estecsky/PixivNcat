@@ -5,6 +5,7 @@ from ncatbot.core.message import GroupMessage, PrivateMessage
 from .PixivCrawler_by_pid import run_constructor_pid
 from .PixivCrawler_by_rank import global_RankType 
 from Unit.random_img import get_Ramdom_imgId
+from .saucenao_search import msg_saucenao_format
 import yaml
 import os
 from ncatbot.core.element import (
@@ -38,15 +39,19 @@ images_pid_path = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(o
 
 
 global_config_yaml = os.path.join(os.path.dirname(__file__),"config.yaml")
+global_temp_qq =  123456790  # 临时消息qq,为发送合并消息做准备
+
 bot = CompatibleEnrollment  # 兼容回调函数注册器
 super_user = ""
 
 PixivNcat_on = True
+Img_Search_on = True
 prev_msg_time = 0
+search_prev_msg_time = 0
 cold_time = 20
 class PixivNcat(BasePlugin):
     name = "PixivNcat" # 插件名称
-    version = "0.7.0"  # 插件版本
+    version = "0.8.0"  # 插件版本
     
     @bot.group_event()
     async def on_group_event(self, msg: GroupMessage):
@@ -56,6 +61,7 @@ class PixivNcat(BasePlugin):
         global PixivNcat_on
         global Pixiv_help_info
         global cold_time
+        global Img_Search_on
     # 定义的回调函数
         if msg.raw_message.lower() == "测试PixivBot".lower():
             if msg.user_id == super_user:
@@ -73,10 +79,12 @@ class PixivNcat(BasePlugin):
         if msg.raw_message.lower() == "关闭PixivBot".lower():
             if msg.user_id == super_user:
                 PixivNcat_on = False
+                Img_Search_on = False
                 await self.api.post_group_msg(msg.group_id, text="PixivBot已关闭")
         if msg.raw_message.lower() == "开启PixivBot".lower():
             if msg.user_id == super_user:
                 PixivNcat_on = True
+                Img_Search_on = True
                 await self.api.post_group_msg(msg.group_id, text="PixivBot已打开")
         if msg.raw_message.lower() == "/pixiv help" or msg.raw_message.lower() == "/pixiv 帮助":
                 await self.api.post_group_msg(msg.group_id, text="\n".join(Pixiv_help_info))
@@ -159,7 +167,66 @@ class PixivNcat(BasePlugin):
                             # await self.api.post_group_file(msg.group_id,image=img_file_path)
                             await self.api.post_group_msg(msg.group_id,text=f"喵~Pid:{artwork_pid}")
 
-    
+    @bot.group_event()
+    async def on_group_event(self, msg: GroupMessage):
+        global global_temp_qq
+        global Img_Search_on
+        global search_prev_msg_time
+        message_segs = msg.message
+        # 默认冷却20秒
+        search_cold_time = 20
+        # 初始化两个标志变量
+        has_text = False
+        has_reply = False
+        
+        # 定义要搜索的关键词
+        Key_word="/二次元搜图"
+        Key_word2="/搜图测试"
+        if Img_Search_on:
+            # 遍历列表中的每个字典
+            for item in message_segs:
+                if item['type'] == 'text' and (item["data"]["text"].strip().startswith(Key_word) or item["data"]["text"].strip().startswith(Key_word2)):
+                    has_text = True
+                    
+                elif item['type'] == 'reply':
+                    has_reply = True
+                    msg_id_img = item['data']["id"]
+            if has_reply and has_text :
+                if msg.time - search_prev_msg_time < search_cold_time and msg.user_id != super_user:
+                    await self.api.post_group_msg(msg.group_id, text=f"搜图{search_cold_time}秒冷却中喵",reply=msg.message_id)
+                    return
+                else:
+                    await self.api.post_group_msg(msg.group_id, text="正在搜图喵~",reply=msg.message_id)
+                    msg_dict = await self.api.get_msg(message_id=msg_id_img)
+                    
+                    # _log.info(f"获取信息示例{msg_dict['data']["message"][0]["data"]["url"]}")
+                    # await self.api.post_group_msg(msg.group_id, text=f"消息图片地址为{msg_dict['data']["message"][0]["data"]["url"]}")
+                    
+                    if msg_dict['data']["message"][0]["type"] == "image":
+                        # if msg.user_id == super_user:
+                        msg_img_url = msg_dict['data']["message"][0]["data"]["url"]
+                        img_search_msg = await msg_saucenao_format(msg_img_url)
+                        img_search_result = "".join(img_search_msg)
+                        if img_search_msg[0] == "未找到高相似图片":
+                            await self.api.post_group_msg(msg.group_id, text="没有找到高相似图片喵~",reply=msg.message_id)
+                            return
+                        # 向中转qq发送搜图结果
+                        await self.api.post_private_msg(user_id=global_temp_qq,text=img_search_result)
+                        
+                        # 获取需要合并的消息
+                        result_history = await self.api.get_friend_msg_history(user_id=global_temp_qq,message_seq=0,count=1,reverse_order=False)
+                        history_lst = result_history["data"]["messages"]
+                        send_msg_id = []
+                        for msg_each in history_lst:
+                            send_msg_id.append(str(msg_each["message_id"]))
+                        # 发送合并信息
+                        search_prev_msg_time = msg.time
+                        await self.api.send_group_forward_msg(msg.group_id,messages=send_msg_id)
+                    else:
+                        await self.api.post_group_msg(msg.group_id, text="不是图片喵~",reply=msg.message_id)
+
+
+
     
     @bot.private_event()
     async def on_private_message(self, msg: PrivateMessage):
