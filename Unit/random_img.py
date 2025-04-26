@@ -8,7 +8,7 @@ selected_img_id_path = os.path.join(os.path.dirname(os.path.dirname(__file__)),"
 # "selected_img_id.txt"
 def getOri_imgId(img_path):
     for root,dirs,files in os.walk(img_path):
-        with open(Ori_img_id_path,"w") as f:
+        with open(Ori_img_id_path,"w",encoding="utf-8") as f:
             for file in files:
                 # if file.endswith(".jpg"):
                 #     print(file)
@@ -22,7 +22,7 @@ def getOri_imgId(img_path):
 
 def random_id(random_lst):
     i = 0
-    while i < 10:
+    while i < 100:
         x = random.choice(random_lst)
         i += 1
         random_lst.append(x)
